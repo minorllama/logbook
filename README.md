@@ -1,8 +1,10 @@
-# Miscellany
+## Numerical methods. 
 
-## GPUs  
+### Linear algebra recipes.
 
-Notes and small examples of writing GPU kernels in Python, Julia, C, and Rust.  
+* [Strassen multiplication](https://github.com/minorllama/numerical_algorithms/blob/main/recipes/linear_algebra/src/fast.rs) 
+
+## Write-ups and small side projects. 
 
 * Writing Python extensions using [Rust/burn](https://github.com/tracel-ai/burn): [Burn RK4 Example for SHO](burn_rk4/README.md).
 * Writing CUDA extensions for Julia using CUDA.jl to set up context for a CUDA C extension: [Julia, CUDA.jl, CUDA C](julia_cuda_extension/README.md). 
@@ -11,6 +13,4 @@ This was initially written before there was no support for `cuBLASDx` in Julia. 
 * A RAII wrapped [CuBuffer](https://github.com/minorllama/cubuffer-rs) for GPU arrays in rust.
 * A hackable GUI barebones [texteditor](https://github.com/minorllama/gbuf-rs)
 
-## Async with Rust and Python
 
-To add. 

@@ -1,8 +1,8 @@
 # Julia performance & dot access pattern
 
-APIs in Julia sometimes feel a bit clunky - obviously this is subjective, but being used to python, `object.service()` feels cleaner than `service(object)` since `object` can hide details of how `service` is impemented, but with `service(object)`, `service` must understand the internals of `object`. This is very `OOP` - encapsulation, and this issue of universal dot syntax has been discussed: [issue:31779](https://github.com/JuliaLang/julia/issues/31779), [pr:25052](https://github.com/JuliaLang/julia/pull/25052), and shut down as julia is not OOP. However, rust has dot syntax, and it isn't OOP. 
+APIs in Julia sometimes feel a bit clunky - obviously this is subjective, but being used to python, `object.service()` feels cleaner than `service(object)` since `object` can hide details of how `service` is implemented, but with `service(object)`, `service` must understand the internals of `object`. This is very `OOP` - encapsulation, and this issue of universal function call syntax has been discussed: [issue:31779](https://github.com/JuliaLang/julia/issues/31779), [pr:25052](https://github.com/JuliaLang/julia/pull/25052), and shut down as julia is not OOP. However, rust has dot call syntax, and it isn't OOP. 
 
-Here's another hacky attempt to get `object.service()`, being explicit about performance overheads. 
+Here's another hacky attempt to get `object.service()` in Julia for cleaner APIs, while being explicit about performance overheads. 
 
 ## The Closure/Capture Method (Mimicking Python)
 
@@ -27,7 +27,7 @@ end
 
 ```
 
-The performance risk: in `y1 = make(); y2 = make();`. The access `y1.f` is dynamic since `f` is dynamically typed, though the call `y1.f()` is optimized. This may matter in a hot loop, though with jit, this may well get optimized away. `@code_warntype` shows that the type is `Any` on the lookup. 
+There's a performance risk: in `y1 = make(); y2 = make();`. The access `y1.f` is dynamic since `f` is dynamically typed, though the call `y1.f()` is optimized. This may matter in a hot loop, but ideally with jit, this gets optimized away. Inspecting with `@code_warntype` shows that the type is `Any` on the lookup.  
 
 ```
 @code_warntype y1.f
@@ -46,7 +46,7 @@ Body::Any
 
 One possible way to avoid this is to parametrize the types  'data::DType', 'f::F' with `MockPythonMethod{DType, F}`. 
 
-To ensure the code avoids multiple dispatch and compiles to native machine code, in `@code_warntype obj.f()`, any red text or `Any`, `Core.Box`, all indicate captured variables are not statically typed. To verify type stability: in `dump(obj.f)`, the closure's hidden fields must all be types to be type stable (e.g., `Vector{Int64}`). Looking at actual native code, `@code_native obj.f()`, seeing `jl_apply_generic` means dynamically typed fields.
+In `@code_warntype obj.f()`, any red text or `Any`, `Core.Box`, all indicate captured variables are not statically typed. This needs to be avoided to ensure the code avoids multiple dispatch and compiles to optimized native machine code. Now to verify type stability, in `dump(obj.f)`, the closure's hidden fields must all be types to be type stable (e.g., `Vector{Int64}`). Looking at actual native code, `@code_native obj.f()`, seeing `jl_apply_generic` means dynamically typed fields.
 
 ---
 
